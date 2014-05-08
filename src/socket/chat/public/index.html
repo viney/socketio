@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>socket.io</title>
+        <link href="/metro-bootstrap.css" rel="stylesheet">
+        <link href="/metro-bootstrap-responsive.css" rel="stylesheet">
+        <script src="/jquery.min.js" type="text/javascript"></script>
+    </head>
+    <body class="metro">
+        <script src="/socket.io.js" type="text/javascript"></script>
+        <script type="text/javascript">
+            $(document).ready(function(){
+                var socket = io.connect("http://192.168.1.241:8080");
+                socket.on("connect", function(data){
+                    $.each(data, function(i, val){
+                        $('#content').append('<tr><td class="right">'+ val.CreateTime +'&nbsp;<font style="color:red">'+ val.IP +'说:</font>&nbsp'+ val.Content +'</td></tr>');
+                    })
+                })
+
+                socket.on("disconnect", function(data){
+                    $.each(data, function(i, val){
+                        $('#content').append('<tr><td class="right">'+ val.CreateTime +'&nbsp;<font style="color:red">'+ val.IP +'说:</font>&nbsp'+ val.Content +'</td></tr>');
+                    })
+                })
+
+                socket.on("join", function(data){
+                        $('#content').append('<tr><td class="right">'+ data.CreateTime +'&nbsp;<font style="color:blue">'+ data.IP +'说:</font>&nbsp'+ data.Content +'</td></tr>');
+                })
+
+                socket.on("quit", function(data){
+                        $('#content').append('<tr><td class="right">'+ data.CreateTime +'&nbsp;<font style="color:blue">'+ data.IP +'说:</font>&nbsp'+ data.Content +'</td></tr>');
+                })
+
+                /*
+                $(document).delegate('text', 'keydown', function(evt){
+                    if (evt.keyCode == 13 && evt.ctrlKey){
+                        $('#btn').focus().click();
+                    }
+                })
+                */
+                
+                $('#sayForm').submit(function(){
+                    var content = $('#msg').val();
+                    if (content.length == 0){
+                        alert("回复不能为空！");
+                        return;
+                    }
+
+                    if ($.trim(content)){
+                        socket.emit("say", content);
+                    }
+                })
+
+                socket.on("say", function(data){
+                        $('#content').append('<tr><td class="right">'+ data.CreateTime +'&nbsp;<font style="color:blue">'+ data.IP +'说:</font>&nbsp'+ data.Content +'</td></tr>');
+                })
+            })
+        </script>
+        <div class="container">
+        <h3>简易聊天室</h3>
+            <table class="table striped bordered hovered">
+                <tbody id="content">
+                </tbody>
+            </table>
+            <form id="sayForm" method="POST">
+                <div class="input-control text">
+                    <input type="text" id="msg" name="content" placeholder="请输入聊天内容...">
+                </div>
+                <input type="submit" id="btn" value="提交" />
+            </form>
+        </div>
+    </body>
+</html>
